@@ -1,0 +1,76 @@
+import java.io.*;
+import java.net.*;
+
+public class Server {
+    public static void main(String[] args) {
+        System.out.println("Ayush Nikam, 31010922060");
+        int port = 5555;
+
+        try (ServerSocket ss = new ServerSocket(port)) {
+            System.out.println("Waiting for connection...");
+
+            // Accept client connection
+            try (Socket s = ss.accept();
+                 BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                 PrintWriter pw = new PrintWriter(s.getOutputStream(), true)) {
+
+                System.out.println("Connection is established...");
+
+                // Read number from client
+                int num = Integer.parseInt(br.readLine());
+                System.out.println("Request from client = " + num);
+
+                // Calculate factorial
+                int f = 1;
+                for (int i = 1; i <= num; i++) {
+                    f *= i;
+                }
+
+                // Send factorial result back to client
+                pw.println(f);
+                System.out.println("Factorial sent to client: " + f);
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+import java.io.*;
+import java.net.*;
+
+public class Client {
+    public static void main(String[] args) {
+        System.out.println("Ayush Nikam, 31010922060");
+        int port = 5555;
+
+        try {
+            InetAddress addr = InetAddress.getLocalHost();
+            try (Socket s = new Socket(addr, port);
+                 BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in));
+                 PrintWriter pw = new PrintWriter(s.getOutputStream(), true);
+                 BufferedReader br2 = new BufferedReader(new InputStreamReader(s.getInputStream()))) {
+
+                System.out.println("Connection is established...");
+
+                // Take input from user
+                System.out.print("Enter the Number: ");
+                int num = Integer.parseInt(br1.readLine());
+
+                // Send number to server
+                pw.println(num);
+
+                // Receive factorial result from server
+                int ans = Integer.parseInt(br2.readLine());
+                System.out.println("Response from server (Factorial) = " + ans);
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
