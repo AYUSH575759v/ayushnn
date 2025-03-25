@@ -1,0 +1,121 @@
+import java.io.*;
+import java.net.*;
+
+public class RPC_Server {
+    public static void main(String[] args) {
+        System.out.println("Ayush Nikam, 31010922060");
+
+        int port = 8008;
+
+        try (ServerSocket ss = new ServerSocket(port)) {
+            System.out.println("Waiting for Client...");
+
+            try (Socket s = ss.accept();
+                 BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                 PrintWriter pw = new PrintWriter(s.getOutputStream(), true)) {
+
+                System.out.println("Connection established with client...");
+
+                while (true) {
+                    // Read numbers and operation from client
+                    int n1 = Integer.parseInt(br.readLine());
+                    int n2 = Integer.parseInt(br.readLine());
+                    String sign = br.readLine();
+
+                    System.out.println("Data from Client:");
+                    System.out.println("n1 = " + n1);
+                    System.out.println("n2 = " + n2);
+                    System.out.println("Operation = " + sign);
+
+                    // Perform arithmetic operation
+                    int ans = 0;
+                    switch (sign) {
+                        case "+":
+                            ans = n1 + n2;
+                            break;
+                        case "-":
+                            ans = n1 - n2;
+                            break;
+                        case "*":
+                            ans = n1 * n2;
+                            break;
+                        case "/":
+                            if (n2 == 0) {
+                                pw.println("Error: Division by zero!");
+                                continue;
+                            }
+                            ans = n1 / n2;
+                            break;
+                        default:
+                            pw.println("Error: Invalid operator!");
+                            continue;
+                    }
+
+                    // Send result back to client
+                    pw.println("Answer = " + ans);
+                    pw.flush();
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+}
+
+
+
+
+
+import java.io.*;
+import java.net.*;
+
+public class RPC_Client {
+    public static void main(String[] args) {
+        System.out.println("Ayush Nikam, 31010922060");
+
+        int port = 8008;
+
+        try {
+            InetAddress addr = InetAddress.getLocalHost();
+            System.out.println("IP Address: " + addr);
+
+            try (Socket s = new Socket(addr, port);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                 PrintWriter pw = new PrintWriter(s.getOutputStream(), true);
+                 BufferedReader br1 = new BufferedReader(new InputStreamReader(s.getInputStream()))) {
+
+                System.out.println("Connection established with server...");
+
+                while (true) {
+                    // Take input from user
+                    System.out.print("Enter the first number (or 'end' to exit): ");
+                    String input = br.readLine();
+                    if (input.equalsIgnoreCase("end")) {
+                        System.out.println("Client exiting...");
+                        break;
+                    }
+
+                    int n1 = Integer.parseInt(input);
+                    System.out.print("Enter the second number: ");
+                    int n2 = Integer.parseInt(br.readLine());
+
+                    System.out.print("Enter the operation (+, -, *, /): ");
+                    String sign = br.readLine();
+
+                    // Send data to server
+                    pw.println(n1);
+                    pw.println(n2);
+                    pw.println(sign);
+
+                    // Receive response from server
+                    String res = br1.readLine();
+                    System.out.println("Response from Server: " + res);
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+}
