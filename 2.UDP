@@ -1,0 +1,86 @@
+import java.io.*;
+import java.net.*;
+
+public class UDPServer {
+    public static void main(String[] args) {
+        int port = 1234;
+
+        try (DatagramSocket ds = new DatagramSocket(port)) {
+            System.out.println("Waiting for Client...");
+
+            while (true) {
+                byte[] buffer = new byte[1024];
+                DatagramPacket dp1 = new DatagramPacket(buffer, buffer.length);
+                ds.receive(dp1);
+
+                // Extract received message
+                String str = new String(dp1.getData(), 0, dp1.getLength());
+                System.out.println("Request From Client = " + str);
+
+                if (str.equalsIgnoreCase("end")) {
+                    System.out.println("Server shutting down...");
+                    break;
+                }
+
+                // Calculate factorial
+                int num = Integer.parseInt(str);
+                int f = 1;
+                for (int i = 1; i <= num; i++) {
+                    f *= i;
+                }
+                String res = "Factorial = " + f;
+
+                // Send response to client
+                byte[] responseBytes = res.getBytes();
+                InetAddress clientAddress = dp1.getAddress();
+                int clientPort = dp1.getPort();
+
+                DatagramPacket dp2 = new DatagramPacket(responseBytes, responseBytes.length, clientAddress, clientPort);
+                ds.send(dp2);
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+import java.io.*;
+import java.net.*;
+
+public class UDPClient {
+    public static void main(String[] args) {
+        try (DatagramSocket ds = new DatagramSocket()) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+            while (true) {
+                System.out.print("Enter a Number (or 'end' to exit): ");
+                String str = br.readLine();
+
+                // Send data to server
+                byte[] data = str.getBytes();
+                InetAddress serverAddress = InetAddress.getLocalHost();
+                DatagramPacket dp1 = new DatagramPacket(data, data.length, serverAddress, 1234);
+                ds.send(dp1);
+
+                if (str.equalsIgnoreCase("end")) {
+                    System.out.println("Client exiting...");
+                    break;
+                }
+
+                // Receive response from server
+                byte[] responseBuffer = new byte[1024];
+                DatagramPacket dp2 = new DatagramPacket(responseBuffer, responseBuffer.length);
+                ds.receive(dp2);
+
+                String response = new String(dp2.getData(), 0, dp2.getLength());
+                System.out.println("Response From Server: " + response);
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
